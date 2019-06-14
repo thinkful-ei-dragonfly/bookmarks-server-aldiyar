@@ -17,7 +17,7 @@ const validateBearerToken = require('./validator');
 
 const app = express();
 
-const morganOption = (NODE_ENV === 'production')
+const morganOption = process.env.NODE_ENV === 'production'
   ? 'tiny'
   : 'common';
 
