@@ -15,6 +15,7 @@ const validateBearerToken = require('./validator');
 
 
 
+
 const app = express();
 
 const morganOption = process.env.NODE_ENV === 'production'
@@ -26,11 +27,12 @@ app.use(cors());
 app.use(helmet());
 app.use(validateBearerToken);
 
+app.use(bookmarksRouter);
+
 app.get('/', (req, res) => {
   res.send('Hello, world!');
 });
 
-app.use(bookmarksRouter);
 app.use(errorHandler);
 
 module.exports =  app;
