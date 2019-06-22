@@ -4,7 +4,8 @@ const {
 const knex = require('knex')
 const app = require('../src/app')
 const {
-  makeBookmarksArray
+  makeBookmarksArray,
+  makeMaliciousBookmark
 } = require('./bookmarks.fixtures')
 
 describe('bookmarks Endpoints', () => {
@@ -43,11 +44,28 @@ describe('bookmarks Endpoints', () => {
           .into('bookmarks')
       })
 
-      it('GET /bookmarks responds with 200 and all of the articles', () => {
-        return supertest(app)
-          .get('/bookmarks')
-          .expect(200, testBookmarks)
+      context(`Given an XSS attack bookmark`, () => {
+        const {
+          maliciousBookmark,
+          expectedBookmark
+        } = makeMaliciousBookmark()
 
+        it('removes XSS attack content', () => {
+
+          return supertest(app)
+            .get(`/bookmarks/${maliciousBookmark.id}`)
+            .expect(200)
+            .expect(res => {
+              expect(res.body.title).to.eql(expectedBookmark.title)
+              expect(res.body.content).to.eql(expectedBookmark.content)
+            })
+          })
+      })
+
+      it('GET /bookmarks responds with 200 and all of the articles', () => {
+          return supertest(app)
+            .get('/bookmarks')
+            .expect(200, testBookmarks)
       })
     })
   })
@@ -57,19 +75,23 @@ describe('bookmarks Endpoints', () => {
         const id = 12342
         return supertest(app)
           .get(`/bookmarks/${id}`)
-          .expect(404, { error: { message: `Bookmark doesn't exist` } })
+          .expect(404, {
+            error: {
+              message: `Bookmark doesn't exist`
+            }
+          })
       })
     })
 
     context(`Given there are articles in the database`, () => {
       const testBookmarks = makeBookmarksArray()
-  
+
       beforeEach('insert bookmarks', () => {
         return db
           .insert(testBookmarks)
           .into('bookmarks')
       })
-  
+
       it(`responds with 200 and the article with matching id`, () => {
         const id = 2
         const expectedBookmark = testBookmarks[id - 1]
@@ -79,5 +101,17 @@ describe('bookmarks Endpoints', () => {
       })
     })
   })
-})
+  describe(`POST /articles`, () => {
+    it(`creates an article, responding with 201 and the new article`, function () {
+      this.retries(3)
+      const newBookmark = {
+        title: 'new bookmark',
+        url: 'newURL.com',
+        rating: '3'
+      }
+    })
+  })
+  describe(`DELETE /Articles/:articel_id`, () => {
 
+  })
+})

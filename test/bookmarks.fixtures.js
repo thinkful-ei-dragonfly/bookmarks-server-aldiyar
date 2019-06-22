@@ -31,4 +31,24 @@ function makeBookmarksArray() {
   ]
 }
 
-module.exports = { makeBookmarksArray }
+function makeMaliciousBookmark() {
+  const maliciousBookmark = {
+    id: 911,
+    title: 'Naughty naughty very naughty <script>alert("xss");</script>',
+    rating: '3',
+    content: `Bad image <img src="https://url.to.file.which/does-not.exist" onerror="alert(document.cookie);">. But not <strong>all</strong> bad.`
+  }
+
+  const expectedBookmark = {
+    ...maliciousBookmark,
+    title: 'Naughty naughty very naughty <script>alert("xss");</script>',
+    content: `Bad image <img src="https://url.to.file.which/does-not.exist" onerror="alert(document.cookie);">. But not <strong>all</strong> bad.`
+  }
+
+  return {
+    maliciousBookmark,
+    expectedBookmark,
+  }
+}
+
+module.exports = { makeBookmarksArray, makeMaliciousBookmark }
